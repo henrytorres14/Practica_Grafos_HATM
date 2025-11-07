@@ -1,0 +1,96 @@
+# Práctica Grafos: Optimización de Rutas de Entrega
+
+import math
+from itertools import permutations
+
+
+# PARÁMETROS DEL PROBLEMA
+
+valor_galon_diesel = 15000  # pesos colombianos
+rendimiento_camion = 10     # km por galón
+
+# Nodos (sedes)
+sedes = ["Central", "Norte", "Sur", "Oriente", "Occidente"]
+
+# Matriz de distancias (km)
+distancias = [
+    [0, 12, 10, 19, 8],
+    [12, 0, 3, 7, 2],
+    [10, 3, 0, 6, 20],
+    [19, 7, 6, 0, 4],
+    [8, 2, 20, 4, 0]
+]
+
+# Calcular matriz de costos de transporte
+n = len(sedes)
+costos = [[0]*n for _ in range(n)]
+for i in range(n):
+    for j in range(n):
+        if i != j:
+            costos[i][j] = (distancias[i][j] * valor_galon_diesel) / rendimiento_camion
+
+
+def prim(costos):
+    n = len(costos)
+    visitado = [False]*n
+    arbol = []
+    total = 0
+
+    visitado[0] = True  # empezamos en la sede Central
+
+    for _ in range(n - 1):
+        minimo = math.inf
+        x = y = 0
+        for i in range(n):
+            if visitado[i]:
+                for j in range(n):
+                    if not visitado[j] and costos[i][j] != 0:
+                        if costos[i][j] < minimo:
+                            minimo = costos[i][j]
+                            x, y = i, j
+        arbol.append((sedes[x], sedes[y], round(minimo, 2)))
+        total += minimo
+        visitado[y] = True
+
+    return arbol, round(total, 2)
+
+
+def costo_ruta(ruta):
+    total = 0
+    for i in range(len(ruta) - 1):
+        total += costos[ruta[i]][ruta[i + 1]]
+    total += costos[ruta[-1]][ruta[0]]  
+    return total
+
+def mejor_ruta():
+    indices = list(range(len(sedes)))
+    mejor_costo = math.inf
+    mejor_camino = []
+
+    for perm in permutations(indices[1:]):  
+        ruta = [0] + list(perm)
+        costo_actual = costo_ruta(ruta)
+        if costo_actual < mejor_costo:
+            mejor_costo = costo_actual
+            mejor_camino = ruta
+
+    return [sedes[i] for i in mejor_camino], round(mejor_costo, 2)
+
+
+if __name__ == "__main__":
+    print("=== OPTIMIZACIÓN DE RUTAS DE ENTREGA ===\n")
+    print("Sedes:", sedes)
+    print("\nMatriz de costos (en pesos):")
+    for fila in costos:
+        print([round(x, 2) for x in fila])
+
+    print("\n-- Árbol de expansión mínima (Prim) --")
+    arbol, costo_min = prim(costos)
+    for (a, b, c) in arbol:
+        print(f"{a} ↔ {b} = ${c}")
+    print(f"Costo total mínimo del árbol: ${costo_min}\n")
+
+    print("-- Mejor ruta (Backtracking / TSP) --")
+    ruta, costo_r = mejor_ruta()
+    print(" → ".join(ruta + [ruta[0]]))
+    print(f"Costo total recorrido: ${costo_r}")
