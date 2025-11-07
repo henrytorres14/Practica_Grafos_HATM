@@ -84,13 +84,13 @@ if __name__ == "__main__":
     for fila in costos:
         print([round(x, 2) for x in fila])
 
-    print("\n-- Árbol de expansión mínima (Prim) --")
+    print("\Árbol de expansión mínima")
     arbol, costo_min = prim(costos)
     for (a, b, c) in arbol:
         print(f"{a} ↔ {b} = ${c}")
     print(f"Costo total mínimo del árbol: ${costo_min}\n")
 
-    print("-- Mejor ruta (Backtracking / TSP) --")
+    print("-- Mejor ruta de entrega")
     ruta, costo_r = mejor_ruta()
     print(" → ".join(ruta + [ruta[0]]))
     print(f"Costo total recorrido: ${costo_r}")
